@@ -143,6 +143,7 @@ namespace ServicioSeguros.Controllers
         {
             var asegurado = await servicioAsegurado.ConsultaEspecifica(cedula);
             var respuesta = new ResponseBaseAPI<AseguradoDto>();
+            respuesta.RetornoOk = asegurado != null;
             if (asegurado == null)
             {
                 respuesta.AgregarMensajeError("No se encontró el asegurado con la cédula proporcionada.",
@@ -160,13 +161,29 @@ namespace ServicioSeguros.Controllers
 
         // agregar seguros a asegurado
         [HttpPost("{cedula}/seguros")]
-        public async Task<ActionResult> AgregarSeguros(string cedula, [FromBody] IEnumerable<SeguroDto> segurosDto)
+        public async Task<ActionResult<ResponseBaseAPI<object>>> AgregarSeguros(string cedula, [FromBody] List<string> listaCodigos)
         {
             var respuesta = new ResponseBaseAPI<object>();
             try
             {
-                await servicioAsegurado.AgregarSeguros(cedula, segurosDto);
-                respuesta.AgregarMensajeExito("Seguros agregados al asegurado exitosamente.");
+                List<string> listaErrores = new();
+                List<string> listaCorrectos = new();
+                Dictionary<TipoMensaje, List<string>> resultado = await servicioAsegurado.AgregarSeguros(cedula, listaCodigos);
+
+                resultado.TryGetValue(TipoMensaje.Error, out listaErrores);
+                resultado.TryGetValue(TipoMensaje.Ok, out listaCorrectos);
+
+                foreach (var error in listaErrores)
+                {
+                    respuesta.AgregarMensajeError(error);
+                }
+                
+                foreach (var error in listaCorrectos)
+                {
+                    respuesta.AgregarMensajeExito(error);
+                }
+                // respuesta.AgregarMensajeExito("Seguros agregados al asegurado exitosamente.");
+                
                 respuesta.RetornoOk = true;
                 return Ok(respuesta);
             }

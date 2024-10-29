@@ -21,23 +21,34 @@ public class SegurosController(
     public async Task<ActionResult<IEnumerable<SeguroDto>>> ObtenerTodos()
     {
         var seguros = await servicioSeguro.ConsultaGeneral();
+        var respuesta = new ResponseBaseAPI<IEnumerable<SeguroDto>>();
+        respuesta.RetornoOk = seguros != null;
         if (seguros == null || !seguros.Any())
         {
-            return NotFound();
+            respuesta.AgregarMensajeError("No se encontraron seguros registrados actualmente");
+            
+            return NotFound(respuesta);
         }
 
-        return Ok(seguros);
+        respuesta.Datos = seguros;    
+        respuesta.AgregarMensajeExito("Seguros cargdos exitosamente");
+        return Ok(respuesta);
     }
 
     [HttpGet("{codigo}")]
-    public async Task<ActionResult<SeguroDto>> ObtenerPorCodigo(string codigo)
+    public async Task<ActionResult<ResponseBaseAPI<SeguroDto>>> ObtenerPorCodigo(string codigo)
     {
         var seguro = await servicioSeguro.ConsultaEspecifica(codigo);
+        var respuesta = new ResponseBaseAPI<SeguroDto>();
+        respuesta.RetornoOk = seguro != null;
         if (seguro == null)
         {
-            return NotFound();
+            respuesta.AgregarMensajeError($"No se encontró un seguro con código: {codigo}");
+            return NotFound(respuesta);
         }
 
+        respuesta.Datos = seguro;
+        respuesta.AgregarMensajeExito($"Se encontró el seguro con código: {codigo}");
         return Ok(seguro);
     }
 

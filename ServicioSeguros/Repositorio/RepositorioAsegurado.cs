@@ -12,7 +12,7 @@ public class RepositorioAsegurado(SegurosDbContext contexto) : IRepositorio<Aseg
     }
 
     public async Task<Asegurado?> ConsultaEspecifica(string id) =>
-        await contexto.Asegurados.FirstOrDefaultAsync(s => s != null && s.Cedula == id);
+        await contexto.Asegurados.FirstOrDefaultAsync(s => s.Cedula == id);
     
 
     public async Task Adicionar(Asegurado entidad)
